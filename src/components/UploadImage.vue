@@ -3,10 +3,10 @@
     <file-pond
       name="test"
       ref="pond"
+      class-name="my-pond"
       label-idle="Drop files here..."
-      v-bind:allow-multiple="true"
+      allow-multiple="true"
       accepted-file-types="image/jpeg, image/png"
-      server="/api"
       v-bind:files="myFiles"
       v-on:init="handleFilePondInit"
     />
@@ -14,23 +14,18 @@
 </template>
 
 <script>
-// Import Vue FilePond
+// Import FilePond
 import vueFilePond from "vue-filepond";
 
-// Import FilePond styles
+// Import plugins
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.esm.js";
+import FilePondPluginImagePreview from "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.esm.js";
+
+// Import styles
 import "filepond/dist/filepond.min.css";
-
-// Import FilePond plugins
-// Please note that you need to install these plugins separately
-
-// Import image preview plugin styles
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
 
-// Import image preview and file type validation plugins
-import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
-import FilePondPluginImagePreview from "filepond-plugin-image-preview";
-
-// Create component
+// Create FilePond component
 const FilePond = vueFilePond(
   FilePondPluginFileValidateType,
   FilePondPluginImagePreview
@@ -39,13 +34,14 @@ const FilePond = vueFilePond(
 export default {
   name: "app",
   data: function () {
-    return { myFiles: ["cat.jpeg"] };
+    return { myFiles: ["index.html"] };
   },
   methods: {
     handleFilePondInit: function () {
       console.log("FilePond has initialized");
 
-      // FilePond instance methods are available on `this.$refs.pond`
+      // example of instance method call on pond reference
+      this.$refs.pond.getFiles();
     },
   },
   components: {
