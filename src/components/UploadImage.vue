@@ -45,8 +45,8 @@ export default {
       this.$refs.pond.getFiles();
     },
     checkUpload: function () {
-      console.log(this.myFiles.length);
-      //   this.$refs.pond.addFile(myFiles);
+      this.myFiles.push();
+      this.$refs.pond.addFile(myFiles);
     },
   },
   components: {
