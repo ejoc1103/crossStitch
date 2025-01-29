@@ -10,6 +10,7 @@
       v-bind:files="myFiles"
       v-on:init="handleFilePondInit"
     />
+    <button v-on:click="checkUpload">Click Me</button>
   </div>
 </template>
 
@@ -34,7 +35,7 @@ const FilePond = vueFilePond(
 export default {
   name: "app",
   data: function () {
-    return { myFiles: ["index.html"] };
+    return { myFiles: [] };
   },
   methods: {
     handleFilePondInit: function () {
@@ -42,6 +43,10 @@ export default {
 
       // example of instance method call on pond reference
       this.$refs.pond.getFiles();
+    },
+    checkUpload: function () {
+      console.log(this.myFiles.length);
+      //   this.$refs.pond.addFile(myFiles);
     },
   },
   components: {

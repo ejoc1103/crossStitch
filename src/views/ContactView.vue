@@ -5,6 +5,8 @@
 <script>
 import UploadImage from "../components/UploadImage.vue";
 
+// an inch of diagram ins 22 by 22 stitches
+
 export default {
   components: {
     UploadImage,
