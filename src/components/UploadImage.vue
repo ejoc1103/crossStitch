@@ -1,16 +1,25 @@
 <template>
   <div id="app">
     <file-pond
-      name="test"
+      name="file"
       ref="pond"
       class-name="my-pond"
-      label-idle="Drop files here..."
+      label-idle="Drag & Drop your image or <span class='filepond--label-action'>Browse Files</span>"
       allow-multiple="true"
-      accepted-file-types="image/jpeg, image/png"
+      accepted-file-types="image/*"
       v-bind:files="myFiles"
       v-on:init="handleFilePondInit"
+      @addfile="handleFileUpload"
     />
-    <button v-on:click="checkUpload">Click Me</button>
+
+    <!-- Display Processed Image -->
+    <div v-if="processedImage">
+      <h3>Processed Image:</h3>
+      <img :src="processedImage" alt="Modified Image" class="pixel" />
+    </div>
+
+    <!-- Save Button -->
+    <button v-if="processedImage" @click="downloadImage">Download Image</button>
   </div>
 </template>
 
@@ -25,6 +34,7 @@ import FilePondPluginImagePreview from "filepond-plugin-image-preview/dist/filep
 // Import styles
 import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
+import { Jimp } from "jimp";
 
 // Create FilePond component
 const FilePond = vueFilePond(
@@ -33,9 +43,8 @@ const FilePond = vueFilePond(
 );
 
 export default {
-  name: "app",
   data: function () {
-    return { myFiles: [] };
+    return { myFiles: [], processedImage: null };
   },
   methods: {
     handleFilePondInit: function () {
@@ -44,9 +53,32 @@ export default {
       // example of instance method call on pond reference
       this.$refs.pond.getFiles();
     },
-    checkUpload: function () {
-      this.myFiles.push();
-      this.$refs.pond.addFile(myFiles);
+    async handleFileUpload(e, file) {
+      if (e) {
+        console.error("File upload error:", e);
+        return;
+      }
+
+      const fileUrl = URL.createObjectURL(file.file);
+
+      try {
+        const image = await Jimp.read(fileUrl);
+
+        image.pixelate(12);
+
+        const base64 = await image.getBase64("image/jpeg");
+        this.processedImage = base64;
+      } catch (e) {
+        console.error("Error loading image with Jimp:", e);
+      }
+    },
+    downloadImage() {
+      const link = document.createElement("a");
+      link.href = this.processedImage;
+      link.download = "processed-image.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     },
   },
   components: {
@@ -54,3 +86,10 @@ export default {
   },
 };
 </script>
+
+<style>
+.pixel {
+  height: 1085px;
+  width: 610px;
+}
+</style>
