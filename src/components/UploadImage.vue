@@ -63,8 +63,23 @@ export default {
 
       try {
         const image = await Jimp.read(fileUrl);
+        const gridSize = 120;
 
         image.pixelate(12);
+
+        image.scan(
+          0,
+          0,
+          image.bitmap.width,
+          image.bitmap.height,
+          function (x, y, idx) {
+            if (x % gridSize === 0 || y % gridSize === 0) {
+              this.bitmap.data[idx] = 0;
+              this.bitmap.data[idx + 1] = 0;
+              this.bitmap.data[idx + 2] = 0;
+            }
+          }
+        );
 
         const base64 = await image.getBase64("image/jpeg");
         this.processedImage = base64;
