@@ -1,28 +1,26 @@
 <template>
-  <header>
-    <div class="wrapper">
-      <h1>Stitches By Shelly</h1>
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/contact">Contact</RouterLink>
-        <RouterLink to="/create">Create</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <div class="app">
+    <Header />
+    <RouterView />
+  </div>
 </template>
 
 <script setup>
-import { RouterLink, RouterView } from "vue-router";
+import Header from "./components/Header.vue";
+import { RouterView } from "vue-router";
 </script>
 
-<style scoped>
-.wrapper {
-  background-color: #d4a59a;
+<style>
+.app {
+  display: grid;
+  justify-items: center;
+  background-color: #f5efe6;
+  font-family: "Lora", serif;
 }
 
-.wrapper h1 {
-  color: #8e6c88;
+h1,
+h2,
+h3 {
+  font-family: "Playfair Display", serif;
 }
 </style>

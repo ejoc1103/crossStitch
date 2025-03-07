@@ -1,3 +1,50 @@
+<template>
+  <div class="main">
+    <div class="floating-gallery">
+      <div class="gallery-container">
+        <div class="info-blurb">
+          <h2>
+            Turn Your Most Cherished Memories into Timeless Cross Stitch Art
+          </h2>
+        </div>
+      </div>
+      <div class="image-container">
+        <img
+          src="../assets/photos/photo1.jpeg"
+          alt="Example 1"
+          class="floating-image"
+        />
+        <p>
+          Transform your
+          <strong
+            >wedding photos, family portraits, and sentimental moments</strong
+          >
+          into stunning, hand-stitched keepsakes.
+        </p>
+      </div>
+      <div class="image-container">
+        <p>
+          Upload your favorite photo, and we’ll create a
+          <strong>beautiful, personalized cross-stitch pattern</strong>
+        </p>
+        <img
+          src="../assets/photos/photo2.jpeg"
+          alt="Example 2"
+          class="floating-image"
+        />
+      </div>
+      <div class="image-container">
+        <img
+          src="../assets/photos/photo3.jpeg"
+          alt="Example 3"
+          class="floating-image"
+        />
+        <p>—a perfect way to preserve your memories in thread.</p>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 // {
 //   "primary": "#F5EFE6",
@@ -10,61 +57,49 @@
 //   "buttonHover": "#A08776"
 // }
 </script>
-
-<template>
-  <main>
-    <div id="divOne">
-      <h1>Home View</h1>
-      <div id="divThree"></div>
-      <div id="divFour"></div>
-      <div id="divFive"></div>
-      <div id="divSix"></div>
-      <div id="divSeven"></div>
-      <div id="divEight"></div>
-    </div>
-  </main>
-</template>
-
 <style scoped>
-#divOne {
-  background-color: #c5b3a3;
+p {
+  font-size: 2.5em;
 }
-#divOne h1 {
-  color: #f5efe6;
+h2 {
+  font-size: 3em;
 }
-#divTwo {
-  background-color: #d4a59a;
-  height: 100px;
-  width: 100px;
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-#divThree {
-  background-color: #8e6c88;
-  height: 100px;
-  width: 100px;
+.gallery-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-#divFour {
-  background-color: #faf8f3;
-  height: 100px;
-  width: 100px;
+.info-blurb {
+  text-align: center;
 }
-#divFive {
-  background-color: #333333;
-  height: 100px;
-  width: 100px;
+.floating-gallery {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
-#divSix {
-  background-color: #666666;
-  height: 100px;
-  width: 100px;
+.floating-image {
+  width: 50vw;
+  height: auto;
+  border-radius: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
 }
-#divSeven {
-  background-color: #c5b3a3;
-  height: 100px;
-  width: 100px;
+.floating-image:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0px 15px 40px rgba(0, 0, 0, 0.3);
 }
-#divEight {
-  background-color: #a08776;
-  height: 100px;
-  width: 100px;
+.image-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
 }
 </style>
