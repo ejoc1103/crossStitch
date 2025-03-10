@@ -1,13 +1,12 @@
 <template>
-  <div class="main">
+  <div class="home">
     <div class="floating-gallery">
-      <div class="gallery-container">
-        <div class="info-blurb">
-          <h2>
-            Turn Your Most Cherished Memories into Timeless Cross Stitch Art
-          </h2>
-        </div>
+      <div class="info-blurb">
+        <h2>
+          Turn Your Most Cherished Memories into Timeless Cross Stitch Art
+        </h2>
       </div>
+
       <div class="image-container">
         <img
           src="../assets/photos/photo1.jpeg"
@@ -22,7 +21,10 @@
           into stunning, hand-stitched keepsakes.
         </p>
       </div>
-      <div class="image-container">
+      <RouterLink to="/estimate">
+        <h3>Get an estimate now!</h3>
+      </RouterLink>
+      <div class="image-container-alt">
         <p>
           Upload your favorite photo, and we’ll create a
           <strong>beautiful, personalized cross-stitch pattern</strong>
@@ -33,19 +35,23 @@
           class="floating-image"
         />
       </div>
+      <RouterLink to="/contact">
+        <h3>Send me your photo and get things started!</h3>
+      </RouterLink>
       <div class="image-container">
         <img
           src="../assets/photos/photo3.jpeg"
           alt="Example 3"
           class="floating-image"
         />
-        <p>—a perfect way to preserve your memories in thread.</p>
+        <p>A perfect way to preserve your memories in thread.</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { RouterLink } from "vue-router";
 // {
 //   "primary": "#F5EFE6",
 //   "secondary": "#D4A59A",
@@ -64,10 +70,10 @@ p {
 h2 {
   font-size: 3em;
 }
-.main {
+.home {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
 }
 .gallery-container {
   display: flex;
@@ -78,12 +84,15 @@ h2 {
   text-align: center;
 }
 .floating-gallery {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   height: 100%;
+  width: 80%;
   gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
+  justify-items: center;
+  align-content: center;
+  background-color: #f4e1e6;
+  padding: 20px;
 }
 .floating-image {
   width: 50vw;
@@ -101,5 +110,13 @@ h2 {
   display: grid;
   grid-template-columns: auto auto;
   align-items: center;
+  justify-items: center;
+  gap: 20px;
+}
+.image-container-alt {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-items: center;
 }
 </style>

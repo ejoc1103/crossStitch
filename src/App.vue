@@ -1,12 +1,12 @@
 <template>
   <div class="app">
-    <Header />
+    <Nav />
     <RouterView />
   </div>
 </template>
 
 <script setup>
-import Header from "./components/Header.vue";
+import Nav from "./components/Nav.vue";
 import { RouterView } from "vue-router";
 </script>
 
@@ -22,5 +22,6 @@ h1,
 h2,
 h3 {
   font-family: "Playfair Display", serif;
+  color: #333333;
 }
 </style>
