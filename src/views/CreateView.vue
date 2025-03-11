@@ -23,7 +23,9 @@
       <div
         v-for="color in colorData"
         :key="color.index"
-        :style="{ backgroundColor: `#${color.hex}` }"
+        :style="{
+          backgroundColor: `#${color.hex}`,
+        }"
       >
         {{ color.floss }}
         <h1>{{ color.symbol }}</h1>
@@ -46,11 +48,17 @@
     <!-- Save Button -->
     <!-- <button v-if="processedImage" @click="downloadImage">Download Image</button> -->
   </div>
-  <div v-if="threadData" class="newImage">
+  <div
+    v-if="threadData"
+    class="newImage"
+    :style="{ gridTemplateColumns: `repeat(${maxX}, 1fr)` }"
+  >
     <div
       v-for="thread in threadData"
       :key="thread.hex"
-      :style="{ backgroundColor: `#${thread.hex}` }"
+      :style="{
+        backgroundColor: `#${thread.hex}`,
+      }"
       class="block"
     ></div>
   </div>
@@ -93,6 +101,7 @@ export default {
       // hex code and matching floss #
       threadData: [],
       colorData: [],
+      maxX: null,
     };
   },
   methods: {
@@ -113,29 +122,32 @@ export default {
       try {
         const image = await Jimp.read(fileUrl);
 
+        const width = image.bitmap.width;
+        const height = image.bitmap.height;
+        let gridSize = 22;
+
         let tempData = [];
 
         let trackY = 0;
         let trackX = 0;
-        let maxX = 700;
 
         this.startImage = await image.getBase64("image/jpeg");
 
         image.pixelate(22);
         this.processedImage = await image.getBase64("image/jpeg");
-        image.scan(
-          0,
-          0,
-          image.bitmap.width,
-          image.bitmap.height,
-          function (x, y, idx) {
-            // if (x % 1320 === 0 || y % 1980 === 0) {
-            //   this.bitmap.data[idx] = 0;
-            //   this.bitmap.data[idx + 1] = 0;
-            //   this.bitmap.data[idx + 2] = 0;
-            // }
 
-            if (x % 22 === 0 && y % 22 === 0) {
+        for (let y = 0; y < height - gridSize; y += gridSize) {
+          for (let x = 0; x < width - gridSize; x += gridSize) {
+            const colorCount = {};
+
+            image.scan(x, y, gridSize, gridSize, function (px, py, idx) {
+              // Sets the grid over the image during the scan will need to be adjusted or moved
+              // if (x % 1320 === 0 || y % 1980 === 0) {
+              //   this.bitmap.data[idx] = 0;
+              //   this.bitmap.data[idx + 1] = 0;
+              //   this.bitmap.data[idx + 2] = 0;
+              // }
+
               let r = this.bitmap.data[idx];
               let g = this.bitmap.data[idx + 1];
               let b = this.bitmap.data[idx + 2];
@@ -145,24 +157,26 @@ export default {
               b = b.toString(16).padStart(2, "0");
               let hex = `#${r}${g}${b}`;
 
-              if (y / 22 > trackY) {
-                trackY++;
-                maxX = trackX;
-                trackX = 0;
-                tempData.push({ hex, x: trackX, y: trackY });
-              } else {
-                trackX++;
-                tempData.push({ hex, x: trackX, y: trackY });
-              }
-            }
+              colorCount[hex] = (colorCount[hex] || 0) + 1;
+            });
+
+            const predominantColor = Object.entries(colorCount).sort(
+              (a, b) => b[1] - a[1]
+            )[0][0];
+
+            tempData.push({ hex: predominantColor, x: trackX, y: trackY });
+            trackX++;
           }
-        );
+          trackY++;
+          this.maxX = trackX;
+          trackX = 0;
+        }
 
         this.pixelData = tempData;
 
         const base64 = await image.getBase64("image/jpeg");
         this.gridImage = base64;
-        console.log(maxX);
+        console.log(this.maxX + "     maxX");
       } catch (e) {
         console.error("Error loading image with Jimp:", e);
       }
@@ -200,7 +214,7 @@ export default {
         let currentClosest = null;
         let currentMin = Infinity;
         let minDistance = Infinity;
-
+        // Searches the chart for the closest matching thread to the pixel
         chart.forEach((thread) => {
           const dmcColor = hexToRgb(`#${thread.hex}`);
           const distance = colorDistance(color, dmcColor);
@@ -209,7 +223,7 @@ export default {
             closest = thread;
           }
         });
-
+        // Filters through existing threads to see if there's one already close enough
         if (this.threadData.length > 0) {
           this.threadData.forEach((thread) => {
             const dmcColor = hexToRgb(`#${thread.hex}`);
@@ -221,7 +235,7 @@ export default {
           });
         }
 
-        if (Math.abs(currentMin - minDistance) < 20) {
+        if (Math.abs(currentMin - minDistance) < 15) {
           closest = currentClosest;
         }
         let symbol = symbols[tempColors.length];
@@ -239,6 +253,9 @@ export default {
           tempColors.push(closest.hex);
         }
       }
+      console.log(this.colorData.length);
+      console.log(this.pixelData);
+      console.log(this.threadData.length);
     },
   },
   components: {
@@ -252,13 +269,12 @@ export default {
   display: grid;
 }
 .block {
-  height: 25px;
-  width: 25px;
+  height: 10px;
+  width: 10px;
   color: white;
 }
 .newImage {
   display: grid;
   justify-self: center;
-  grid-template-columns: repeat(138, 1fr);
 }
 </style>
