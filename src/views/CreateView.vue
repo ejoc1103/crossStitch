@@ -13,11 +13,13 @@
     />
     <div v-if="startFile">
       <h1>File Uploded</h1>
-      <button @click="createPattern">Get Pattern Data</button>
       <button @click="getGridImage">Set Image Grid</button>
     </div>
     <div v-if="startImage">
       <button @click="limitColors">Get Color Pallet</button>
+    </div>
+    <div v-if="colorData.length > 0">
+      <button @click="createPattern">Get Pattern Data</button>
     </div>
     <!-- <div v-if="colorData.length > 0">
       <div
@@ -32,15 +34,7 @@
       </div>
     </div> -->
     <!-- Display Processed Image -->
-    <!-- <div v-if="startImage">
-      <h3>Starter Image</h3>
-      <img :src="startImage" alt="Original Image" class="pixel" />
-    </div>
-    <div v-if="processedImage">
-      <h3>Processed Image:</h3>
-      <img :src="processedImage" alt="Modified Image" class="pixel" />
-    </div>
-    -->
+
     <!-- <div v-if="gridImage">
       <h3>Display with grid</h3>
       <img :src="gridImage" alt="Grid Image" class="pixel" />
@@ -48,20 +42,81 @@
 
     <!-- Save Button -->
     <!-- <button v-if="processedImage" @click="downloadImage">Download Image</button> -->
+    <div v-if="startImage">
+      <h3>Starter Image</h3>
+      <img :src="startImage" alt="Original Image" class="newImage" />
+      <div>
+        <form @submit.prevent="cropImage">
+          <label for="cropXStart">Where to start width crop</label>
+          <select name="cropXStart" id="cropXStart" v-model="cropXstart">
+            <option value="0">0 inches</option>
+            <option value="1">1 inches</option>
+            <option value="2">2 inches</option>
+            <option value="3">3 inches</option>
+            <option value="4">4 inches</option>
+            <option value="5">5 inches</option>
+            <option value="6">6 inches</option>
+            <option value="7">7 inches</option>
+            <option value="8">8 inches</option>
+          </select>
+          <label for="cropYStart">Where to start height crop</label>
+          <select name="cropYStart" id="croYStart" v-model="cropYstart">
+            <option value="0">0 inches</option>
+            <option value="1">1 inches</option>
+            <option value="2">2 inches</option>
+            <option value="3">3 inches</option>
+            <option value="4">4 inches</option>
+            <option value="5">5 inches</option>
+            <option value="6">6 inches</option>
+            <option value="7">7 inches</option>
+            <option value="8">8 inches</option>
+          </select>
+          <label for="cropWidth">Width of crop</label>
+          <select name="cropWidth" id="cropWidth" v-model="cropWidth">
+            <option value="0">0 inches</option>
+            <option value="1">1 inches</option>
+            <option value="2">2 inches</option>
+            <option value="3">3 inches</option>
+            <option value="4">4 inches</option>
+            <option value="5">5 inches</option>
+            <option value="6">6 inches</option>
+            <option value="7">7 inches</option>
+            <option value="8">8 inches</option>
+          </select>
+          <label for="cropHeight">Height of crop</label>
+          <select name="cropHeight" id="cropHeight" v-model="cropHeight">
+            <option value="0">0 inches</option>
+            <option value="1">1 inches</option>
+            <option value="2">2 inches</option>
+            <option value="3">3 inches</option>
+            <option value="4">4 inches</option>
+            <option value="5">5 inches</option>
+            <option value="6">6 inches</option>
+            <option value="7">7 inches</option>
+            <option value="8">8 inches</option>
+          </select>
+          <button type="submit">Crop</button>
+        </form>
+      </div>
+    </div>
+
+    <div v-if="processedImage">
+      <h3>Processed Image:</h3>
+      <img :src="processedImage" alt="Modified Image" class="newImage" />
+    </div>
+
     <div v-if="patternData.length > 0" class="pattern-container">
       <div
         v-for="page in patternData"
         :style="{
           display: `grid`,
+          gridTemplateColumns: `repeat(${page.maxX}, auto)`,
         }"
       >
         <div
           v-for="stitch in page.withSymbols"
-          :style="{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${page.maxX}, 1fr)`,
-            backgroundColor: `#${stitch.hex}`,
-          }"
+          class="block"
+          :style="{ backgroundColor: `#${stitch.hex}` }"
         >
           {{ stitch.symbol }}
         </div>
@@ -114,6 +169,7 @@ export default {
       myFiles: [],
       startFile: null,
       startImage: null,
+      processedImage: null,
       gridImage: null,
       // x and y positions and hex code
       pixelData: [],
@@ -123,6 +179,10 @@ export default {
       colorData: [],
       maxX: null,
       maxY: null,
+      cropXstart: 0,
+      cropYstart: 0,
+      cropWidth: 0,
+      cropHeight: 0,
     };
   },
   methods: {
@@ -137,6 +197,7 @@ export default {
         console.error("File upload error:", e);
         return;
       }
+      //turns file into fileURL to be readible by Jimp
       const fileUrl = URL.createObjectURL(file.file);
       this.startFile = fileUrl;
 
@@ -145,7 +206,9 @@ export default {
 
         const width = image.bitmap.width;
         const height = image.bitmap.height;
+
         let gridSize = 22;
+        let pixelConversion = 22 * 22;
 
         let tempData = [];
 
@@ -154,38 +217,41 @@ export default {
 
         this.startImage = await image.getBase64("image/jpeg");
 
-        for (let y = 0; y < height - gridSize; y += gridSize) {
-          for (let x = 0; x < width - gridSize; x += gridSize) {
-            const colorCount = {};
+        // Resize while keeping aspect ratio
+        // image.scaleToFit(maxWidth, maxHeight);
 
-            image.scan(x, y, gridSize, gridSize, function (px, py, idx) {
-              let r = this.bitmap.data[idx];
-              let g = this.bitmap.data[idx + 1];
-              let b = this.bitmap.data[idx + 2];
+        // for (let y = 0; y < maxHeight - gridSize; y += gridSize) {
+        //   for (let x = 0; x < maxWidth - gridSize; x += gridSize) {
+        //     const colorCount = {};
 
-              r = r.toString(16).padStart(2, "0");
-              g = g.toString(16).padStart(2, "0");
-              b = b.toString(16).padStart(2, "0");
-              let hex = `#${r}${g}${b}`;
+        //     image.scan(x, y, gridSize, gridSize, function (px, py, idx) {
+        //       let r = this.bitmap.data[idx];
+        //       let g = this.bitmap.data[idx + 1];
+        //       let b = this.bitmap.data[idx + 2];
 
-              colorCount[hex] = (colorCount[hex] || 0) + 1;
-            });
+        //       r = r.toString(16).padStart(2, "0");
+        //       g = g.toString(16).padStart(2, "0");
+        //       b = b.toString(16).padStart(2, "0");
+        //       let hex = `#${r}${g}${b}`;
 
-            const predominantColor = Object.entries(colorCount).sort(
-              (a, b) => b[1] - a[1]
-            )[0][0];
-            //Can I add symbol here?
-            tempData.push({ hex: predominantColor, x: trackX, y: trackY });
-            trackX++;
-          }
-          trackY++;
-          this.maxX = trackX;
-          trackX = 0;
-        }
+        //       colorCount[hex] = (colorCount[hex] || 0) + 1;
+        //     });
+        //     //sorts to get the predominant color
+        //     const predominantColor = Object.entries(colorCount).sort(
+        //       (a, b) => b[1] - a[1]
+        //     )[0][0];
 
-        this.maxY = trackY;
+        //     tempData.push({ hex: predominantColor, x: trackX, y: trackY });
+        //     trackX++;
+        //   }
+        //   trackY++;
+        //   this.maxX = trackX;
+        //   trackX = 0;
+        // }
 
-        this.pixelData = tempData;
+        // this.maxY = trackY;
+
+        // this.pixelData = tempData;
       } catch (e) {
         console.error("Error loading image with Jimp:", e);
       }
@@ -288,16 +354,34 @@ export default {
         }
       }
     },
+    async cropImage() {
+      const image = await Jimp.read(this.startFile);
+      const userWidthInches = this.cropWidth;
+      const userHeightInches = this.cropHeight;
+      const userCropX = 0;
+      const userCropY = 0;
+
+      let pixelConversion = 22 * 22;
+
+      const maxWidth = userWidthInches * pixelConversion;
+      const maxHeight = userHeightInches * pixelConversion;
+
+      const cropX = userCropX * pixelConversion;
+      const cropY = userCropY * pixelConversion;
+
+      console.log(maxHeight, maxWidth, cropX, cropY);
+
+      const crop = { h: maxHeight, w: maxWidth, x: cropX, y: cropY };
+      image.crop(crop);
+
+      this.processedImage = await image.getBase64("image/jpeg");
+    },
     createPattern() {
-      console.log(this.colorData[0]);
-      console.log(this.threadData[0]);
-      console.log(this.colorData.length);
-      console.log(this.threadData.length);
       let colors = this.colorData;
       // 60 X 90 blocks 5400
       // Has to be be able to account for partial pages
       let pages = Math.ceil(this.maxY / 90) * Math.ceil(this.maxX / 60);
-
+      let widthMax = this.maxX;
       let temp = [];
 
       const width = 60;
@@ -331,6 +415,7 @@ export default {
           yStart += height;
           yCount += height;
           xStart = 0;
+          xCount = 60;
         }
         temp = [];
       }
@@ -354,8 +439,25 @@ export default {
           });
         });
 
-        let maxX = withSymbols.sort((a, b) => a.x - b.x)[0].x;
-        return { withSymbols, maxX };
+        let thisMaxX = 0;
+        let thisMaxY = 0;
+
+        withSymbols.forEach((stitch) => {
+          if (stitch.x > thisMaxX) {
+            thisMaxX = stitch.x;
+          }
+          if (stitch.y > thisMaxY) {
+            thisMaxY = stitch.y;
+          }
+        });
+
+        if ((thisMaxX + 1) % 60 !== 0) {
+          thisMaxX = (thisMaxX % 60) + 1;
+        } else {
+          thisMaxX = 60;
+        }
+
+        return { withSymbols, maxX: thisMaxX };
       }
     },
   },
@@ -370,20 +472,16 @@ export default {
   display: grid;
   grid-template-columns: 1fr;
   max-width: 100vw;
-  justify-content: center;
 }
 .block {
-  height: 10px;
-  width: 10px;
-  color: white;
-}
-.newImage {
-  display: grid;
-  justify-self: center;
+  height: 5px;
+  width: 5px;
 }
 .pattern-container {
   display: grid;
   grid-template-columns: 1fr;
-  justify-content: center;
+}
+.newImage {
+  max-width: 30vw;
 }
 </style>
