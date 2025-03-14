@@ -1,27 +1,27 @@
 <template>
   <div class="create">
     <file-pond
+      v-if="!startFile"
       name="file"
       ref="pond"
       class-name="my-pond"
       label-idle="Drag & Drop your image or <span class='filepond--label-action'>Browse Files</span>"
       allow-multiple="true"
       accepted-file-types="image/*"
-      v-bind:files="myFiles"
-      v-on:init="handleFilePondInit"
       @addfile="handleFileUpload"
     />
-    <div v-if="startFile">
+    <!-- <div v-if="startFile">
       <h1>File Uploded</h1>
       <button @click="getGridImage">Set Image Grid</button>
-    </div>
+    </div> -->
     <div v-if="startImage">
-      <button @click="limitColors">Get Color Pallet</button>
+      <button @click="processImage">Get Color Pallet</button>
+      <div v-if="colorData.length > 0">
+        <button @click="createPattern">Get Pattern Data</button>
+      </div>
     </div>
-    <div v-if="colorData.length > 0">
-      <button @click="createPattern">Get Pattern Data</button>
-    </div>
-    <!-- <div v-if="colorData.length > 0">
+
+    <div v-if="colorData.length > 0" class="color-container">
       <div
         v-for="color in colorData"
         :key="color.index"
@@ -32,8 +32,7 @@
         {{ color.floss }}
         <h1>{{ color.symbol }}</h1>
       </div>
-    </div> -->
-    <!-- Display Processed Image -->
+    </div>
 
     <!-- <div v-if="gridImage">
       <h3>Display with grid</h3>
@@ -42,67 +41,42 @@
 
     <!-- Save Button -->
     <!-- <button v-if="processedImage" @click="downloadImage">Download Image</button> -->
-    <div v-if="startImage">
-      <h3>Starter Image</h3>
-      <img :src="startImage" alt="Original Image" class="newImage" />
-      <div>
-        <form @submit.prevent="cropImage">
-          <label for="cropXStart">Where to start width crop</label>
-          <select name="cropXStart" id="cropXStart" v-model="cropXstart">
-            <option value="0">0 inches</option>
-            <option value="1">1 inches</option>
-            <option value="2">2 inches</option>
-            <option value="3">3 inches</option>
-            <option value="4">4 inches</option>
-            <option value="5">5 inches</option>
-            <option value="6">6 inches</option>
-            <option value="7">7 inches</option>
-            <option value="8">8 inches</option>
-          </select>
-          <label for="cropYStart">Where to start height crop</label>
-          <select name="cropYStart" id="croYStart" v-model="cropYstart">
-            <option value="0">0 inches</option>
-            <option value="1">1 inches</option>
-            <option value="2">2 inches</option>
-            <option value="3">3 inches</option>
-            <option value="4">4 inches</option>
-            <option value="5">5 inches</option>
-            <option value="6">6 inches</option>
-            <option value="7">7 inches</option>
-            <option value="8">8 inches</option>
-          </select>
-          <label for="cropWidth">Width of crop</label>
-          <select name="cropWidth" id="cropWidth" v-model="cropWidth">
-            <option value="0">0 inches</option>
-            <option value="1">1 inches</option>
-            <option value="2">2 inches</option>
-            <option value="3">3 inches</option>
-            <option value="4">4 inches</option>
-            <option value="5">5 inches</option>
-            <option value="6">6 inches</option>
-            <option value="7">7 inches</option>
-            <option value="8">8 inches</option>
-          </select>
-          <label for="cropHeight">Height of crop</label>
-          <select name="cropHeight" id="cropHeight" v-model="cropHeight">
-            <option value="0">0 inches</option>
-            <option value="1">1 inches</option>
-            <option value="2">2 inches</option>
-            <option value="3">3 inches</option>
-            <option value="4">4 inches</option>
-            <option value="5">5 inches</option>
-            <option value="6">6 inches</option>
-            <option value="7">7 inches</option>
-            <option value="8">8 inches</option>
-          </select>
-          <button type="submit">Crop</button>
-        </form>
-      </div>
-    </div>
+    <div class="cropArea">
+      <div v-if="startImage">
+        <h3>Starter Image</h3>
+        <img
+          ref="image"
+          :src="startImage"
+          alt="Original Image"
+          class="newImage"
+        />
 
-    <div v-if="processedImage">
-      <h3>Processed Image:</h3>
-      <img :src="processedImage" alt="Modified Image" class="newImage" />
+        <label>Aspect Ratio:</label>
+        <select v-model="aspectRatio" @change="setAspectRatio">
+          <option :value="NaN">Free</option>
+          <option :value="1">Square (1:1)</option>
+          <option :value="4 / 3">Standard (4:3)</option>
+          <option :value="16 / 9">Widescreen (16:9)</option>
+        </select>
+
+        <div>
+          <label>X Position: {{ cropX }}</label>
+          <input type="range" v-model="cropX" min="0" :max="maxWidth" />
+          <label>Y Position: {{ cropY }}</label>
+          <input type="range" v-model="cropY" min="0" :max="maxHeight" />
+          <label>Width: {{ cropWidth }}</label>
+          <input type="range" v-model="cropWidth" min="0" :max="maxWidth" />
+          <label>Height: {{ cropHeight }}</label>
+          <input type="range" v-model="cropHeight" min="0" :max="maxHeight" />
+
+          <button @click="cropImage">Crop</button>
+        </div>
+      </div>
+
+      <div v-if="croppedDisplay">
+        <h3>Processed Image:</h3>
+        <img :src="croppedDisplay" alt="Modified Image" class="newImage" />
+      </div>
     </div>
 
     <div v-if="patternData.length > 0" class="pattern-container">
@@ -122,20 +96,6 @@
         </div>
       </div>
     </div>
-    <!-- <div
-      v-if="threadData"
-      class="newImage"
-      :style="{ gridTemplateColumns: `repeat(${maxX}, 1fr)` }"
-    >
-      <div
-        v-for="thread in threadData"
-        :key="thread.hex"
-        :style="{
-          backgroundColor: `#${thread.hex}`,
-        }"
-        class="block"
-      ></div>
-    </div> -->
   </div>
 </template>
 
@@ -155,6 +115,9 @@ import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
 import { Jimp } from "jimp";
 
+import Cropper from "cropperjs";
+import "cropperjs/dist/cropper.min.css";
+
 import chart from "../assets/chart";
 import symbols from "../assets/symbols";
 // Create FilePond component
@@ -166,10 +129,9 @@ const FilePond = vueFilePond(
 export default {
   data: function () {
     return {
-      myFiles: [],
       startFile: null,
       startImage: null,
-      processedImage: null,
+      croppedImage: null,
       gridImage: null,
       // x and y positions and hex code
       pixelData: [],
@@ -179,19 +141,19 @@ export default {
       colorData: [],
       maxX: null,
       maxY: null,
-      cropXstart: 0,
-      cropYstart: 0,
-      cropWidth: 0,
-      cropHeight: 0,
+      cropX: 0,
+      cropY: 0,
+      cropHeight: 8,
+      cropWidth: 8,
+      maxHeight: 8,
+      maxWidth: 8,
+      gridSize: 22,
+      croppedDisplay: null,
+      cropper: null,
+      aspectRatio: NaN,
     };
   },
   methods: {
-    handleFilePondInit: function () {
-      console.log("FilePond has initialized");
-
-      // example of instance method call on pond reference
-      this.$refs.pond.getFiles();
-    },
     async handleFileUpload(e, file) {
       if (e) {
         console.error("File upload error:", e);
@@ -200,58 +162,19 @@ export default {
       //turns file into fileURL to be readible by Jimp
       const fileUrl = URL.createObjectURL(file.file);
       this.startFile = fileUrl;
-
+      //Takes file and turns it into a base64 image
       try {
         const image = await Jimp.read(fileUrl);
 
         const width = image.bitmap.width;
         const height = image.bitmap.height;
+        this.maxWidth = width / this.gridSize / this.gridSize;
+        this.maxHeight = height / this.gridSize / this.gridSize;
 
-        let gridSize = 22;
-        let pixelConversion = 22 * 22;
-
-        let tempData = [];
-
-        let trackY = 0;
-        let trackX = 0;
+        this.cropWidth = width / this.gridSize / this.gridSize;
+        this.cropHeight = height / this.gridSize / this.gridSize;
 
         this.startImage = await image.getBase64("image/jpeg");
-
-        // Resize while keeping aspect ratio
-        // image.scaleToFit(maxWidth, maxHeight);
-
-        // for (let y = 0; y < maxHeight - gridSize; y += gridSize) {
-        //   for (let x = 0; x < maxWidth - gridSize; x += gridSize) {
-        //     const colorCount = {};
-
-        //     image.scan(x, y, gridSize, gridSize, function (px, py, idx) {
-        //       let r = this.bitmap.data[idx];
-        //       let g = this.bitmap.data[idx + 1];
-        //       let b = this.bitmap.data[idx + 2];
-
-        //       r = r.toString(16).padStart(2, "0");
-        //       g = g.toString(16).padStart(2, "0");
-        //       b = b.toString(16).padStart(2, "0");
-        //       let hex = `#${r}${g}${b}`;
-
-        //       colorCount[hex] = (colorCount[hex] || 0) + 1;
-        //     });
-        //     //sorts to get the predominant color
-        //     const predominantColor = Object.entries(colorCount).sort(
-        //       (a, b) => b[1] - a[1]
-        //     )[0][0];
-
-        //     tempData.push({ hex: predominantColor, x: trackX, y: trackY });
-        //     trackX++;
-        //   }
-        //   trackY++;
-        //   this.maxX = trackX;
-        //   trackX = 0;
-        // }
-
-        // this.maxY = trackY;
-
-        // this.pixelData = tempData;
       } catch (e) {
         console.error("Error loading image with Jimp:", e);
       }
@@ -282,13 +205,15 @@ export default {
     },
     downloadImage() {
       const link = document.createElement("a");
-      link.href = this.processedImage;
+      link.href = this.croppedImage;
       link.download = "processed-image.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     },
     limitColors() {
+      console.log("Limiting Colors");
+      console.log(this.pixelData.length);
       let tempColors = [];
       function hexToRgb(hex) {
         const bigint = parseInt(hex.slice(1), 16);
@@ -355,33 +280,89 @@ export default {
       }
     },
     async cropImage() {
+      console.log("Cropping Image");
+      console.log(this.cropX, this.cropY, this.cropWidth, this.cropHeight);
       const image = await Jimp.read(this.startFile);
-      const userWidthInches = this.cropWidth;
-      const userHeightInches = this.cropHeight;
-      const userCropX = 0;
-      const userCropY = 0;
 
       let pixelConversion = 22 * 22;
 
-      const maxWidth = userWidthInches * pixelConversion;
-      const maxHeight = userHeightInches * pixelConversion;
+      const maxWidth = this.cropWidth * pixelConversion;
+      const maxHeight = this.cropHeight * pixelConversion;
 
-      const cropX = userCropX * pixelConversion;
-      const cropY = userCropY * pixelConversion;
+      const cropX = this.cropX * pixelConversion;
+      const cropY = this.cropY * pixelConversion;
 
       console.log(maxHeight, maxWidth, cropX, cropY);
 
       const crop = { h: maxHeight, w: maxWidth, x: cropX, y: cropY };
       image.crop(crop);
 
-      this.processedImage = await image.getBase64("image/jpeg");
+      this.croppedImage = image;
+      this.croppedDisplay = await image.getBase64("image/jpeg");
+    },
+    async processImage() {
+      let tempData = [];
+
+      let trackY = 0;
+      let trackX = 0;
+
+      let image = null;
+      if (this.croppedImage) {
+        image = this.croppedImage;
+      } else {
+        image = await Jimp.read(this.startFile);
+      }
+
+      const width = image.bitmap.width;
+      const height = image.bitmap.height;
+
+      for (let y = 0; y < height - this.gridSize; y += this.gridSize) {
+        for (let x = 0; x < width - this.gridSize; x += this.gridSize) {
+          const colorCount = {};
+
+          image.scan(
+            x,
+            y,
+            this.gridSize,
+            this.gridSize,
+            function (px, py, idx) {
+              let r = this.bitmap.data[idx];
+              let g = this.bitmap.data[idx + 1];
+              let b = this.bitmap.data[idx + 2];
+
+              r = r.toString(16).padStart(2, "0");
+              g = g.toString(16).padStart(2, "0");
+              b = b.toString(16).padStart(2, "0");
+              let hex = `#${r}${g}${b}`;
+
+              colorCount[hex] = (colorCount[hex] || 0) + 1;
+            }
+          );
+          //sorts to get the predominant color
+          const predominantColor = Object.entries(colorCount).sort(
+            (a, b) => b[1] - a[1]
+          )[0][0];
+
+          tempData.push({ hex: predominantColor, x: trackX, y: trackY });
+          trackX++;
+        }
+        trackY++;
+        this.maxX = trackX;
+        trackX = 0;
+      }
+
+      this.maxY = trackY;
+
+      this.pixelData = tempData;
+
+      this.limitColors();
     },
     createPattern() {
+      console.log("Creating Pattern");
       let colors = this.colorData;
       // 60 X 90 blocks 5400
       // Has to be be able to account for partial pages
       let pages = Math.ceil(this.maxY / 90) * Math.ceil(this.maxX / 60);
-      let widthMax = this.maxX;
       let temp = [];
 
       const width = 60;
@@ -476,6 +457,14 @@ export default {
 .block {
   height: 5px;
   width: 5px;
+}
+.color-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.cropArea {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
 .pattern-container {
   display: grid;
