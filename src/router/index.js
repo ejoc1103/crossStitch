@@ -25,7 +25,7 @@ const router = createRouter({
     {
       path: "/estimate",
       name: "estimate",
-      Component: EstimateView,
+      component: EstimateView,
     },
   ],
 });

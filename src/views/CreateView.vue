@@ -1,11 +1,10 @@
 <template>
   <div class="create">
     <file-pond
-      v-if="!startFile"
       name="file"
       ref="pond"
       class-name="my-pond"
-      label-idle="Drag & Drop your image or <span class='filepond--label-action'>Browse Files</span>"
+      label-idle="Drag & Drop your image or Browse Files"
       allow-multiple="true"
       accepted-file-types="image/*"
       @addfile="handleFileUpload"
@@ -108,23 +107,16 @@ import vueFilePond from "vue-filepond";
 
 // Import plugins
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.esm.js";
-import FilePondPluginImagePreview from "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.esm.js";
 
 // Import styles
-import "filepond/dist/filepond.min.css";
-import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css";
 import { Jimp } from "jimp";
 
 import Cropper from "cropperjs";
-import "cropperjs/dist/cropper.min.css";
 
 import chart from "../assets/chart";
 import symbols from "../assets/symbols";
 // Create FilePond component
-const FilePond = vueFilePond(
-  FilePondPluginFileValidateType,
-  FilePondPluginImagePreview
-);
+const FilePond = vueFilePond(FilePondPluginFileValidateType);
 
 export default {
   data: function () {
@@ -442,13 +434,10 @@ export default {
       }
     },
   },
-  components: {
-    FilePond,
-  },
 };
 </script>
 
-<style>
+<style scoped>
 .create {
   display: grid;
   grid-template-columns: 1fr;
