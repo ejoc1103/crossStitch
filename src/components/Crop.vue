@@ -1,23 +1,30 @@
 <template>
-  <div class="crop-container">
+  <div class="crop-page">
     <h3>Upload & Crop Image</h3>
-
-    <vue-cropper
-      v-if="imageUrl"
-      ref="cropper"
-      class="custom-cropper"
-      :src="imageUrl"
-      :aspect-ratio="selectedAspectRatio"
-      :view-mode="1"
-      :drag-mode="crop"
-      :auto-crop-area="0.8"
-      :background="true"
-      :zoomable="true"
-      :scalable="true"
-      :movable="true"
-      :crop-box-movable="true"
-      :crop-box-resizable="true"
-    />
+    <div class="cropper-area">
+      <!-- Cropper Component -->
+      <div v-if="imageUrl" class="img-cropper">
+        <!-- IM going to need to set min and max for width and height -->
+        <vue-cropper
+          ref="cropper"
+          :ready="onReady"
+          :src="imageUrl"
+          :aspect-ratio="selectedAspectRatio"
+          :view-mode="2"
+          :minCropBoxWidth="minCropWidth"
+          :minCropBoxHeight="minCropHeight"
+          :maxCropBoxWidth="maxCropWidth"
+          :maxCropBoxHeight="maxCropHeight"
+          :drag-mode="'move'"
+          :auto-crop-area="0.8"
+          :zoomable="false"
+          :scalable="true"
+          :movable="true"
+          :crop-box-movable="true"
+          :crop-box-resizable="true"
+        />
+      </div>
+    </div>
 
     <!-- Aspect Ratio Selector -->
     <label>Aspect Ratio:</label>
@@ -41,37 +48,43 @@
 
 <script>
 import VueCropper from "vue-cropperjs";
+import "../assets/cropper.css"; // Ensure you have the CSS for cropper
 
 export default {
-  data() {
-    return {
-      croppedImage: null,
-      selectedAspectRatio: 1, // Default: Free selection
-    };
-  },
   components: {
     VueCropper,
   },
-  computed: {
-    // startFile is the fileURL from the store
-    imageUrl() {
-      return this.$store.state.startImage;
-    },
+  data() {
+    return {
+      croppedImage: null,
+      selectedAspectRatio: 1,
+      imageUrl: null,
+      minCropWidth: 192,
+      minCropHeight: 192,
+      maxCropWidth: 768,
+      maxCropHeight: 768,
+    };
   },
   watch: {
-    // Watch for changes in the imageUrl to reinitialize the cropper
+    "$store.state.startFile": {
+      handler(newValue) {
+        this.imageUrl = newValue;
+      },
+      immediate: true, // Ensures watcher runs on component mount
+    },
   },
   methods: {
     cropImage() {
-      const cropper = this.$refs.cropper;
-
-      if (!cropper) return;
-
-      this.croppedImage = cropper.getCroppedCanvas().toDataURL("image/png");
+      if (!this.$refs.cropper) return;
+      this.croppedImage = this.$refs.cropper
+        .getCroppedCanvas()
+        ?.toDataURL("image/png");
+      this.$store.commit("ADD_CROP_FILE", this.croppedImage); // Commit the cropped image to Vuex store
     },
     setAspectRatio() {
-      if (this.cropper) {
-        this.cropper.setAspectRatio(this.aspectRatio);
+      if (this.$refs.cropper) {
+        console.log(this.$refs.cropper);
+        this.$refs.cropper.setAspectRatio(this.selectedAspectRatio);
       }
     },
   },
@@ -79,27 +92,27 @@ export default {
 </script>
 
 <style scoped>
-.crop-container {
-  text-align: center;
+img {
+  max-width: 900px;
+  height: auto;
+}
+.crop-page {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
+  padding: 20px;
+  height: 100%;
 }
 .cropper-wrapper {
-  width: 70%;
+  width: 800px;
   height: auto;
+  border: 3px solid #ccc;
 }
-.cropper-wrapper img {
-  max-width: 60%;
-  height: auto;
+.cropper {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
 }
-.custom-cropper-wrapper {
-  text-align: center;
-  padding: 10px;
-}
-.custom-cropper {
-  width: 60vh;
-  height: auto;
+.cropper-area {
+  width: 614px;
 }
 </style>

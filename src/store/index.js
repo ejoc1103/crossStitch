@@ -5,6 +5,7 @@ export function createStore() {
     state: {
       startFile: null,
       startImage: null,
+      cropFile: null,
     },
     mutations: {
       ADD_FILE(state, file) {
@@ -12,6 +13,9 @@ export function createStore() {
       },
       ADD_IMAGE(state, image) {
         state.startImage = image;
+      },
+      ADD_CROP_FILE(state, file) {
+        state.cropFile = file;
       },
     },
   });
