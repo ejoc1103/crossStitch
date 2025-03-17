@@ -1,10 +1,8 @@
 <template>
   <div class="crop-page">
-    <h3>Upload & Crop Image</h3>
     <div class="cropper-area">
       <!-- Cropper Component -->
-      <div v-if="imageUrl" class="img-cropper">
-        <!-- IM going to need to set min and max for width and height -->
+      <div v-if="imageUrl">
         <vue-cropper
           ref="cropper"
           :src="imageUrl"
@@ -12,8 +10,6 @@
           :view-mode="2"
           :minCropBoxWidth="minCropWidth"
           :minCropBoxHeight="minCropHeight"
-          :maxCropBoxWidth="maxCropWidth"
-          :maxCropBoxHeight="maxCropHeight"
           :drag-mode="'move'"
           :auto-crop-area="0.8"
           :zoomable="false"
@@ -21,24 +17,39 @@
           :movable="true"
           :crop-box-movable="true"
           :crop-box-resizable="true"
+          @cropmove="checkCropSize"
         />
+        <div>
+          <p :style="{ color: widthColor }">
+            Crop Width: {{ cropBoxWidth }} px
+          </p>
+          <p :style="{ color: heightColor }">
+            Crop Height: {{ cropBoxHeight }} px
+          </p>
+        </div>
+        <!-- Aspect Ratio Selector -->
+        <label>Aspect Ratio:</label>
+        <select v-model="selectedAspectRatio" @change="setAspectRatio">
+          <option :value="NaN">Free</option>
+          <option :value="1">Square (1:1)</option>
+          <option :value="4 / 3">Standard (4:3)</option>
+          <option :value="16 / 9">Widescreen (16:9)</option>
+        </select>
       </div>
+      <!-- Crop Button -->
+      <button @click="cropImage">Crop</button>
     </div>
 
-    <!-- Aspect Ratio Selector -->
-    <label>Aspect Ratio:</label>
-    <select v-model="selectedAspectRatio" @change="setAspectRatio">
-      <option :value="NaN">Free</option>
-      <option :value="1">Square (1:1)</option>
-      <option :value="4 / 3">Standard (4:3)</option>
-      <option :value="16 / 9">Widescreen (16:9)</option>
-    </select>
-
-    <!-- Crop Button -->
-    <button @click="cropImage">Crop & Save</button>
-
     <!-- Cropped Image Preview -->
-    <div v-if="croppedImage">
+    <div v-if="croppedImage" class="cropper-wrapper">
+      <label for="colorRange">Detail Level:</label>
+      <select v-model="colorRange" id="colorRange">
+        <option :value="50">Very Low</option>
+        <option :value="35">Low</option>
+        <option :value="25">Medium</option>
+        <option :value="15">High</option>
+        <option :value="10">Very High</option>
+      </select>
       <button @click="processImage">Process Image</button>
       <img :src="croppedImage" alt="Cropped Result" />
     </div>
@@ -69,6 +80,10 @@ export default {
       colorData: [],
       gridSize: 22,
       colorRange: 35,
+      cropBoxWidth: 0,
+      cropBoxHeight: 0,
+      widthColor: "black",
+      heightColor: "black",
     };
   },
   watch: {
@@ -86,6 +101,16 @@ export default {
         .getCroppedCanvas()
         ?.toDataURL("image/png");
       this.$store.commit("ADD_CROP_FILE", this.croppedImage); // Commit the cropped image to Vuex store
+    },
+    checkCropSize() {
+      const cropper = this.$refs.cropper;
+      if (!cropper) return;
+
+      const { width, height } = cropper.getCropBoxData();
+      this.cropBoxWidth = Math.floor((width / 96) * 100) / 100;
+      this.cropBoxHeight = Math.floor((height / 96) * 100) / 100;
+      this.widthColor = width > this.maxCropWidth ? "red" : "black";
+      this.heightColor = height > this.maxCropHeight ? "red" : "black";
     },
     setAspectRatio() {
       if (this.$refs.cropper) {
@@ -140,6 +165,7 @@ export default {
 
       this.$store.commit("SET_MAX_Y", trackY);
 
+      this.$store.commit("ADD_PIXEL_DATA", tempData);
       this.pixelData = tempData;
 
       this.limitColors();
@@ -200,6 +226,7 @@ export default {
           symbol,
         });
         this.pixelData[i].hex = closest.hex;
+
         if (tempColors.indexOf(closest.hex) === -1) {
           this.colorData.push({
             floss: closest.floss,
@@ -217,6 +244,7 @@ export default {
         }
       }
       console.log("done");
+      console.log(this.threadData.length);
       this.$store.commit("ADD_THREAD_DATA", this.threadData);
       this.$store.commit("ADD_COLOR_DATA", this.colorData);
       this.$store.commit("ADD_PIXEL_DATA", this.pixelData);
@@ -231,16 +259,19 @@ img {
   height: auto;
 }
 .crop-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   padding: 20px;
   height: 100%;
 }
 .cropper-wrapper {
-  width: 800px;
+  width: 614px;
   height: auto;
   border: 3px solid #ccc;
+}
+.cropper-wrapper img {
+  max-width: 100%;
+  height: auto;
 }
 .cropper {
   display: grid;

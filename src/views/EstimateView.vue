@@ -6,8 +6,12 @@
     <Crop />
     <CreatePattern />
     <div v-if="$store.state.colorData">
-      <button @click="calculateEstimate">calculateEstimate</button>
-      {{ supplyCost }} {{ laborCost }} {{ totalCost }}
+      <button @click="calculateEstimate">Calculate Estimate</button>
+      <div>
+        <p>Supply Cost: ${{ supplyCost }}</p>
+        <p>Height {{ $store.state.imageHeight }}</p>
+        <p>Width {{ $store.state.imageWidth }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -28,6 +32,7 @@ export default {
       supplyCost: 0,
       laborCost: 0,
       totalCost: 0,
+      count: 0,
     };
   },
   methods: {
@@ -36,14 +41,14 @@ export default {
       // Example calculation for estimate
       const colors = this.$store.state.colorData;
       console.log(colors);
-      let count = 0;
+
       colors.forEach((color) => {
         // About 2400 stitches per sceen;
-        count += Math.ceil(color.count / 2400);
+        this.count += Math.ceil(color.count / 2400);
       });
-      this.supplyCost = Math.floor(count * 0.69, 2); // Replace with actual logic
+      this.supplyCost = Math.floor(this.count * 0.69 * 100) / 100; // Replace with actual logic
       this.laborCost = 0; // Replace with actual logic
-      this.totalCost = this.supplyCost + this.laborCost;
+      this.totalCost = this.supplyCost + this.laborCost / 100;
     },
   },
 };
@@ -51,10 +56,12 @@ export default {
 
 <style scoped>
 .estimate-view {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr;
   padding: 20px;
   height: 100%;
+  align-items: center;
+  text-align: center;
+  min-height: 90vh;
 }
 </style>

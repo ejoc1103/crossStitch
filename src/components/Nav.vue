@@ -20,6 +20,7 @@ import { RouterLink } from "vue-router";
   justify-content: space-around;
   width: 100%;
   background-color: #8e6c88;
+  min-height: 10vh;
 }
 h1 {
   font-size: 4em;

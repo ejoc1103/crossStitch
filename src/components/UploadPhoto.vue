@@ -1,23 +1,21 @@
 <template>
-  <div class="upload-photo">
-    <h1>Upload Photo</h1>
-    <file-pond
-      v-if="!startFile"
-      name="file"
-      ref="pond"
-      class-name="my-pond"
-      label-idle="Drag & Drop your image or Browse Files"
-      allow-multiple="true"
-      accepted-file-types="image/*"
-      @addfile="handleFileUpload"
-    />
-  </div>
+  <file-pond
+    v-if="!startFile"
+    name="file"
+    ref="pond"
+    class-name="my-pond"
+    label-idle="Drag & Drop your image or <span class='filepond--label-action'>Browse</span>"
+    allow-multiple="true"
+    accepted-file-types="image/*"
+    @addfile="handleFileUpload"
+  />
 </template>
 
 <script>
 import vueFilePond from "vue-filepond";
 // Import plugins
 import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.esm.js";
+import "filepond/dist/filepond.min.css";
 
 import { Jimp } from "jimp";
 
@@ -50,13 +48,9 @@ export default {
       try {
         const image = await Jimp.read(fileUrl);
 
-        // const width = image.bitmap.width;
-        // const height = image.bitmap.height;
-        // this.maxWidth = width / this.gridSize / this.gridSize;
-        // this.maxHeight = height / this.gridSize / this.gridSize;
-
-        // this.cropWidth = width / this.gridSize / this.gridSize;
-        // this.cropHeight = height / this.gridSize / this.gridSize;
+        const width = image.bitmap.width;
+        const height = image.bitmap.height;
+        this.$store.commit("SET_IMAGE_DIMENSIONS", { width, height });
 
         this.startImage = await image.getBase64("image/jpeg");
       } catch (e) {
@@ -71,16 +65,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.upload-photo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-</style>
+<style scoped></style>

@@ -16,6 +16,7 @@ import { RouterView } from "vue-router";
   justify-items: center;
   background-color: #f5efe6;
   font-family: "Lora", serif;
+  min-height: 100vh;
 }
 
 h1,

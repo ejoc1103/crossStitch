@@ -12,6 +12,8 @@ export function createStore() {
       patternData: null,
       maxX: 0,
       maxY: 0,
+      imageWidth: 0,
+      imageHeight: 0,
     },
     mutations: {
       ADD_FILE(state, file) {
@@ -40,6 +42,10 @@ export function createStore() {
       },
       SET_MAX_Y(state, maxY) {
         state.maxY = maxY;
+      },
+      SET_IMAGE_DIMENSIONS(state, { width, height }) {
+        state.imageWidth = width;
+        state.imageHeight = height;
       },
     },
   });
