@@ -1,10 +1,11 @@
 <template>
   <div class="estimate-view">
     <!-- Main content for the Estimate View -->
-    <h1>Get Estimate</h1>
-    <UploadPhoto />
-    <Crop />
-    <CreatePattern />
+    <UploadPhoto v-if="!$store.state.startFile" />
+
+    <Crop v-if="$store.state.startFile && !$store.state.colorData" />
+    <CreatePattern v-if="$store.state.colorData" />
+
     <div v-if="$store.state.colorData">
       <button @click="calculateEstimate">Calculate Estimate</button>
       <div>
@@ -59,8 +60,8 @@ export default {
   display: grid;
   grid-template-columns: 1fr;
   padding: 20px;
-  height: 100%;
-  align-items: center;
+  align-items: start;
+  justify-items: center;
   text-align: center;
   min-height: 90vh;
 }

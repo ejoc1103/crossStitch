@@ -1,8 +1,20 @@
 <template>
-  <div class="crop-page">
+  <div class="crop-page" v-if="!loading">
+    <h2>Crop Your Image Here</h2>
+
     <div class="cropper-area">
+      <div class="aspect-ratio-selector">
+        <label>Aspect Ratio:</label>
+        <select v-model="selectedAspectRatio" @change="setAspectRatio">
+          <option :value="NaN">Free</option>
+          <option :value="1">Square (1:1)</option>
+          <option :value="4 / 3">Standard (4:3)</option>
+          <option :value="16 / 9">Widescreen (16:9)</option>
+        </select>
+        <button @click="cropImage">Crop</button>
+      </div>
       <!-- Cropper Component -->
-      <div v-if="imageUrl">
+      <div>
         <vue-cropper
           ref="cropper"
           :src="imageUrl"
@@ -14,44 +26,51 @@
           :auto-crop-area="0.8"
           :zoomable="false"
           :scalable="true"
-          :movable="true"
+          :movable="false"
           :crop-box-movable="true"
           :crop-box-resizable="true"
           @cropmove="checkCropSize"
+          @ready="checkCropSize"
         />
-        <div>
-          <p :style="{ color: widthColor }">
-            Crop Width: {{ cropBoxWidth }} px
-          </p>
-          <p :style="{ color: heightColor }">
-            Crop Height: {{ cropBoxHeight }} px
-          </p>
-        </div>
-        <!-- Aspect Ratio Selector -->
-        <label>Aspect Ratio:</label>
-        <select v-model="selectedAspectRatio" @change="setAspectRatio">
-          <option :value="NaN">Free</option>
-          <option :value="1">Square (1:1)</option>
-          <option :value="4 / 3">Standard (4:3)</option>
-          <option :value="16 / 9">Widescreen (16:9)</option>
-        </select>
       </div>
       <!-- Crop Button -->
-      <button @click="cropImage">Crop</button>
     </div>
 
     <!-- Cropped Image Preview -->
-    <div v-if="croppedImage" class="cropper-wrapper">
-      <label for="colorRange">Detail Level:</label>
-      <select v-model="colorRange" id="colorRange">
-        <option :value="50">Very Low</option>
-        <option :value="35">Low</option>
-        <option :value="25">Medium</option>
-        <option :value="15">High</option>
-        <option :value="10">Very High</option>
-      </select>
-      <button @click="processImage">Process Image</button>
-      <img :src="croppedImage" alt="Cropped Result" />
+    <div class="results-box">
+      <div v-if="croppedImage" class="cropped-results">
+        <label for="colorRange">Detail Level:</label>
+        <select v-model="colorRange" id="colorRange">
+          <option :value="50">$</option>
+          <option :value="35">$$</option>
+          <option :value="25">$$$</option>
+          <option :value="15">$$$$</option>
+          <option :value="10">$$$$$</option>
+        </select>
+        <button @click="processImage">Process Image</button>
+        <img :src="croppedImage" alt="Cropped Result" />
+      </div>
+      <div v-else class="cropped-waiting">
+        <h3>Cropped Image will show here!</h3>
+        <h4>
+          Please Keep your Image No larger that 8 inches for height and width
+        </h4>
+        <div>
+          <p :style="{ color: widthColor }">
+            Crop Width: {{ cropBoxWidth }} inches
+          </p>
+          <p :style="{ color: heightColor }">
+            Crop Height: {{ cropBoxHeight }} inches
+          </p>
+        </div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+  <div v-else class="crop-page">
+    <h2 style="grid-column: span 2">Processing Image...</h2>
+    <div style="grid-column: span 2" class="cropped-waiting">
+      <p>Please wait while we process your image...</p>
     </div>
   </div>
 </template>
@@ -84,6 +103,7 @@ export default {
       cropBoxHeight: 0,
       widthColor: "black",
       heightColor: "black",
+      loading: false,
     };
   },
   watch: {
@@ -118,6 +138,7 @@ export default {
       }
     },
     async processImage() {
+      this.loading = true;
       let tempData = [];
 
       let trackY = 0;
@@ -245,6 +266,21 @@ export default {
       }
       console.log("done");
       console.log(this.threadData.length);
+      this.loading = false;
+      let cropBoxWidth = this.cropBoxWidth;
+      let cropBoxHeight = this.cropBoxHeight;
+      if (this.cropBoxWidth === "Ready") {
+        cropBoxWidth =
+          Math.floor((this.$store.state.imageWidth / 96) * 100) / 100;
+      }
+      if (this.cropBoxHeight === "Ready") {
+        cropBoxHeight =
+          Math.floor((this.$store.state.imageHeight / 96) * 100) / 100;
+      }
+      this.$store.commit("SET_IMAGE_DIMENSIONS", {
+        width: cropBoxWidth,
+        height: cropBoxHeight,
+      });
       this.$store.commit("ADD_THREAD_DATA", this.threadData);
       this.$store.commit("ADD_COLOR_DATA", this.colorData);
       this.$store.commit("ADD_PIXEL_DATA", this.pixelData);
@@ -254,30 +290,88 @@ export default {
 </script>
 
 <style scoped>
+body {
+  font-size: 2em;
+}
+h2 {
+  font-size: 3em;
+  background-color: #f4e1e6;
+  color: #4e3535;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: 80%;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  grid-column: span 2;
+}
+h3,
+h4,
+p {
+  font-size: 2em;
+  background-color: #f4e1e6;
+  color: #4e3535;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: 80%;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 img {
-  max-width: 900px;
-  height: auto;
+  width: 614px;
+  max-height: 720px;
+}
+.aspect-ratio-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  grid-column: span 2;
 }
 .crop-page {
   display: grid;
   grid-template-columns: 1fr 1fr;
   padding: 20px;
-  height: 100%;
+  justify-items: center;
+  gap: 20px;
+  max-width: 100vw;
 }
-.cropper-wrapper {
+.cropped-results {
+  display: grid;
   width: 614px;
   height: auto;
-  border: 3px solid #ccc;
-}
-.cropper-wrapper img {
-  max-width: 100%;
-  height: auto;
-}
-.cropper {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
 }
 .cropper-area {
   width: 614px;
+}
+.results-box {
+  display: grid;
+  max-width: 40vw;
+  justify-items: center;
+  align-items: start;
+  text-align: center;
+}
+.cropped-waiting {
+  border: 20px solid;
+  border-image: linear-gradient(45deg, #8e6c88, #d80dd5, #ceed05ad, #d71111) 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  background-color: #f9f9f9;
+  background-image: linear-gradient(to right, #ddd 1px, transparent 1px),
+    linear-gradient(to bottom, #ddd 1px, transparent 1px);
+  background-size: 28px 28px; /* Adjust size to match the grid size */
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+  color: #888;
+  font-size: 1.2em;
+  width: 614px;
+  height: 800px;
 }
 </style>

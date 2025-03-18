@@ -1,23 +1,32 @@
 <template>
   <div class="create-pattern">
-    <button @click="createPattern">Create Pattern</button>
-    <div v-if="patternData.length > 0" class="pattern-container">
+    <div class="pattern-controls">
+      <button @click="createPattern">Create Pattern</button>
       <div
-        v-for="page in patternData"
+        v-if="patternData.length > 0"
+        class="pattern-container"
         :style="{
-          display: `grid`,
-          gridTemplateColumns: `repeat(${page.maxX}, auto)`,
+          gridTemplateColumns: `repeat(${numberOfColumns}, auto)`,
         }"
       >
         <div
-          v-for="stitch in page.withSymbols"
-          class="block"
-          :key="`${stitch.x}-${stitch.y}`"
-          :style="{ backgroundColor: `#${stitch.hex}` }"
+          v-for="page in patternData"
+          :style="{
+            display: `grid`,
+            gridTemplateColumns: `repeat(${page.maxX}, auto)`,
+          }"
         >
-          {{ stitch.symbol }}
+          <div
+            v-for="stitch in page.withSymbols"
+            class="block"
+            :key="`${stitch.x}-${stitch.y}`"
+            :style="{ backgroundColor: `#${stitch.hex}` }"
+          ></div>
         </div>
       </div>
+    </div>
+    <div>
+      <img :src="$store.state.cropFile" alt="Cropped Image" />
     </div>
   </div>
 </template>
@@ -27,6 +36,7 @@ export default {
   data() {
     return {
       patternData: [],
+      numberOfColumns: Math.ceil(this.$store.state.maxX / 60),
     };
   },
   methods: {
@@ -126,15 +136,25 @@ export default {
 </script>
 
 <style scoped>
+img {
+  max-width: 648px;
+  height: auto;
+}
+.pattern-controls {
+  min-width: 648px;
+}
 .create-pattern {
+  display: grid;
+  grid-template-columns: auto 1fr;
   padding: 16px;
+  max-width: 100vw;
+  gap: 20px;
 }
 .block {
-  height: 20px;
-  width: 20px;
+  height: 5px;
+  width: 5px;
 }
 .pattern-container {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
 }
 </style>

@@ -1,11 +1,7 @@
 <template>
   <div class="home">
     <div class="floating-gallery">
-      <div class="info-blurb">
-        <h2>
-          Turn Your Most Cherished Memories into Timeless Cross Stitch Art
-        </h2>
-      </div>
+      <h2>Turn Your Most Cherished Memories into Timeless Cross Stitch Art</h2>
 
       <div class="image-container">
         <img
@@ -66,36 +62,58 @@ import { RouterLink } from "vue-router";
 <style scoped>
 p {
   font-size: 2.5em;
+  background-color: #f4e1e6;
+  color: #333333;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 800px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-h2 {
+h2,
+h3 {
   font-size: 3em;
+  background-color: #f4e1e6;
+  color: #4e3535;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: 80%;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+h3 {
+  width: 100%;
 }
 .home {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  height: 100%;
 }
 .gallery-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-.info-blurb {
-  text-align: center;
+  height: 100%;
 }
 .floating-gallery {
   display: grid;
   grid-template-columns: 1fr;
-  height: 100%;
   width: 80%;
-  gap: 20px;
+  gap: 40px;
   justify-items: center;
   align-content: center;
-  background-color: #f4e1e6;
   padding: 20px;
 }
 .floating-image {
-  width: 50vw;
+  width: 30vw;
   height: auto;
   border-radius: 15px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -112,11 +130,17 @@ h2 {
   align-items: center;
   justify-items: center;
   gap: 20px;
+  background: linear-gradient(90deg, #d1a3b8, #8e6c88);
+  padding: 20px;
+  border-radius: 15px;
 }
 .image-container-alt {
   display: grid;
   grid-template-columns: auto auto;
   align-items: center;
   justify-items: center;
+  background: linear-gradient(90deg, #8e6c88, #d1a3b8);
+  padding: 20px;
+  border-radius: 15px;
 }
 </style>

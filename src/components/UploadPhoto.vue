@@ -1,14 +1,17 @@
 <template>
-  <file-pond
-    v-if="!startFile"
-    name="file"
-    ref="pond"
-    class-name="my-pond"
-    label-idle="Drag & Drop your image or <span class='filepond--label-action'>Browse</span>"
-    allow-multiple="true"
-    accepted-file-types="image/*"
-    @addfile="handleFileUpload"
-  />
+  <div class="upload-photo">
+    <h2>Upload Your Photo!</h2>
+    <file-pond
+      name="file"
+      ref="pond"
+      class-name="my-pond"
+      label-idle="Drag & Drop your image or <span class='filepond--label-action'>Browse</span>"
+      allow-multiple="true"
+      accepted-file-types="image/*"
+      :style="{ width: '100%', height: '100%' }"
+      @addfile="handleFileUpload"
+    />
+  </div>
 </template>
 
 <script>
@@ -64,5 +67,27 @@ export default {
   },
 };
 </script>
-
-<style scoped></style>
+<style scoped>
+h2 {
+  font-size: 3em;
+  background-color: #f4e1e6;
+  color: #4e3535;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.upload-photo {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  justify-items: center;
+  gap: 30px;
+  background: linear-gradient(90deg, #d1a3b8, #8e6c88);
+  padding: 30px;
+  border-radius: 15px;
+}
+</style>

@@ -11,12 +11,18 @@ import { RouterView } from "vue-router";
 </script>
 
 <style>
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f5efe6;
+}
 .app {
   display: grid;
   justify-items: center;
   background-color: #f5efe6;
   font-family: "Lora", serif;
   min-height: 100vh;
+  height: 100%;
 }
 
 h1,
