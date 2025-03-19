@@ -2,6 +2,7 @@
   <div class="upload-photo">
     <h2>Upload Your Photo!</h2>
     <file-pond
+      v-if="!loading"
       name="file"
       ref="pond"
       class-name="my-pond"
@@ -11,6 +12,9 @@
       :style="{ width: '100%', height: '100%' }"
       @addfile="handleFileUpload"
     />
+    <transition name="fade">
+      <div v-if="loading" class="loading"><h1>Loading...</h1></div>
+    </transition>
   </div>
 </template>
 
@@ -30,18 +34,18 @@ export default {
     return {
       startFile: null,
       startImage: null,
+      loading: false,
     };
   },
   components: {
     FilePond,
   },
-  computed: {
-    // Add any computed properties you need here
-  },
   methods: {
     async handleFileUpload(e, file) {
+      this.loading = true; // Set loading to true when file upload starts
       if (e) {
         console.error("File upload error:", e);
+        this.loading = false;
         return;
       }
       //turns file into fileURL to be readible by Jimp
@@ -60,7 +64,7 @@ export default {
         console.error("Error loading image with Jimp:", e);
       }
       // Commit the file URL and image to the Vuex store
-
+      this.loading = false; // Set loading to false when file upload is done
       this.$store.commit("ADD_FILE", fileUrl);
       this.$store.commit("ADD_IMAGE", this.startImage);
     },
@@ -89,5 +93,54 @@ h2 {
   background: linear-gradient(90deg, #d1a3b8, #8e6c88);
   padding: 30px;
   border-radius: 15px;
+}
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20vh;
+  width: 30vw;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  animation: pulse 1.5s infinite ease-in-out;
+}
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20vh;
+  width: 30vw;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+.loading h1 {
+  font-size: 2em;
+  color: #4e3535;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
 }
 </style>

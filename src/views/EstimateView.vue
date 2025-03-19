@@ -1,19 +1,18 @@
 <template>
+  <div v-if="$store.state.colorData">
+    <button @click="calculateEstimate">Calculate Estimate</button>
+    <div>
+      <p>Supply Cost: ${{ supplyCost }}</p>
+      <p>Height {{ $store.state.imageHeight }}</p>
+      <p>Width {{ $store.state.imageWidth }}</p>
+    </div>
+  </div>
   <div class="estimate-view">
     <!-- Main content for the Estimate View -->
     <UploadPhoto v-if="!$store.state.startFile" />
 
     <Crop v-if="$store.state.startFile && !$store.state.colorData" />
     <CreatePattern v-if="$store.state.colorData" />
-
-    <div v-if="$store.state.colorData">
-      <button @click="calculateEstimate">Calculate Estimate</button>
-      <div>
-        <p>Supply Cost: ${{ supplyCost }}</p>
-        <p>Height {{ $store.state.imageHeight }}</p>
-        <p>Width {{ $store.state.imageWidth }}</p>
-      </div>
-    </div>
   </div>
 </template>
 <script>
@@ -64,5 +63,18 @@ export default {
   justify-items: center;
   text-align: center;
   min-height: 90vh;
+}
+p {
+  font-size: 2em;
+  background-color: #f4e1e6;
+  color: #4e3535;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  width: 80%;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 </style>

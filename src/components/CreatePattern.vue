@@ -45,7 +45,6 @@ export default {
       let maxY = this.$store.state.maxY;
       let maxX = this.$store.state.maxX;
       let pixelData = this.$store.state.pixelData;
-      console.log(colors);
       // 60 X 90 blocks 5400
       // Has to be be able to account for partial pages
       let pages = Math.ceil(maxY / 90) * Math.ceil(maxX / 60);
@@ -73,8 +72,6 @@ export default {
         });
 
         let withSymbols = getSymbols(temp);
-
-        console.log(withSymbols);
 
         this.patternData.push(withSymbols);
 
